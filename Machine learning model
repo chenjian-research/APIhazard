@@ -1,0 +1,224 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from itertools import cycle
+from sklearn.ensemble import RandomForestClassifier 
+from sklearn.neural_network import MLPClassifier
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from xgboost import XGBClassifier
+from sklearn.metrics import roc_curve, auc
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import label_binarize, LabelEncoder 
+from sklearn.impute import SimpleImputer
+from sklearn.model_selection import cross_val_score 
+from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import roc_auc_score
+from sklearn.metrics import precision_score
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import balanced_accuracy_score
+from sklearn.datasets import make_classification
+from sklearn.metrics import make_scorer
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import cross_validate, KFold
+from sklearn.base import clone
+
+dataset=pd.read_csv(r'D:\1work\1 PhD\algae_2km.csv')
+import statsmodels.api as sm
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+
+#VIF analysis
+dataset.fillna(0, inplace=True)
+data_df = pd.DataFrame(dataset)
+data_df = sm.add_constant(data_df)
+vif = pd.DataFrame()
+vif["Features"] = data_df.columns[1:]
+vif["VIF Factor"] = [variance_inflation_factor(data_df.values, i) for i in range(1, data_df.shape[1])]
+print(vif)
+
+from imblearn.over_sampling import SMOTE
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split, StratifiedKFold
+
+X = dataset.drop('algae', axis=1)
+X.fillna(0, inplace=True) 
+y = dataset['algae']
+feature_names = X.columns.tolist()
+scaler = StandardScaler()
+X= scaler.fit_transform(X)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=52, stratify=y)
+
+smote = SMOTE(sampling_strategy='auto', random_state=69)
+
+X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
+
+X_train = pd.DataFrame(X_train_resampled, columns=feature_names)
+y_train = y_train_resampled
+
+X_test = pd.DataFrame(X_test, columns=feature_names)
+
+#Comparison of performance among five machine learning model
+
+cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=1412)
+
+models = {
+    'RandomForest': RandomForestClassifier(),
+    'XGBoost': XGBClassifier(use_label_encoder=False, eval_metric='logloss'),
+    'NeuralNetwork': MLPClassifier(max_iter=1000),
+    'SVM': SVC(probability=True),
+    'KNN': KNeighborsClassifier()
+}
+
+def train_and_evaluate_model(model, X_train, y_train, X_test, y_test, cv):
+
+    X_train = np.ascontiguousarray(X_train)
+    X_test = np.ascontiguousarray(X_test)
+    y_train = np.ascontiguousarray(y_train)
+    y_test = np.ascontiguousarray(y_test)
+    
+    model_clone = clone(model)
+
+    cv_results = cross_val_score(model_clone, X_train, y_train, cv=cv, 
+                                 scoring=make_scorer(roc_auc_score, needs_proba=True))
+    cv_auc = np.mean(cv_results)
+
+    model_clone.fit(X_train, y_train)
+
+    y_test_pred = model_clone.predict(X_test)
+    y_test_proba = model_clone.predict_proba(X_test)[:, 1]
+
+    test_accuracy = accuracy_score(y_test, y_test_pred)
+    test_auc = roc_auc_score(y_test, y_test_proba)
+
+    return cv_auc, test_accuracy, test_auc
+
+final_model_performance = {}
+
+for name, model in models.items():
+    cv_auc, test_accuracy, test_auc = train_and_evaluate_model(model, X_train, y_train, X_test, y_test, cv)
+    final_model_performance[name] = {
+        'CV AUC': cv_auc,
+        'Test Accuracy': test_accuracy,
+        'Test AUC': test_auc
+    }
+
+for model_name, performance in final_model_performance.items():
+    print(f"{model_name} - CV AUC: {performance['CV AUC']:.4f}, "
+          f"Test Accuracy: {performance['Test Accuracy']:.4f}, Test AUC: {performance['Test AUC']:.4f}")
+
+#chose the XGBoost as the final model
+X = dataset.drop('algae', axis=1)
+X.fillna(0, inplace=True) 
+y = dataset['algae']
+feature_names = X.columns.tolist()
+scaler = StandardScaler()
+X= scaler.fit_transform(X)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=57, stratify=y)
+
+smote = SMOTE(sampling_strategy='auto', random_state=551)
+X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
+
+X_train = pd.DataFrame(X_train_resampled, columns=feature_names)
+y_train = y_train_resampled
+
+X_test = pd.DataFrame(X_test, columns=feature_names)
+
+xgb_model = XGBClassifier(use_label_encoder=False, eval_metric="logloss", random_state=80)
+
+param_grid = {
+    'n_estimators': range(10, 300, 1), 
+    'max_depth': range(0, 21),  
+    'learning_rate': np.arange(0.01, 0.5, 0.01), 
+    'subsample': [0.6, 0.7,0.8, 0.9,1.0],  
+    'colsample_bytree': [0.6, 0.7,0.8, 0.9,1.0],  
+    'min_child_weight': [1, 2,3, 4,5], 
+    'gamma': np.arange(0, 1.1, 0.1)  
+}
+
+grid_search = GridSearchCV(
+    estimator=xgb_model, 
+    param_grid=param_grid, 
+    scoring='roc_auc', 
+    cv=cv, 
+    n_jobs=-1, 
+    verbose=2
+)
+
+grid_search.fit(X_train, y_train)
+
+print("best_param:", grid_search.best_params_)
+
+finxgb = xgb.XGBClassifier(n_estimators=150, learning_rate=0.02, max_depth=6, random_state=80,
+                           gamma=0, subsample=1,
+                           colsample_bytree=1, min_child_weight=1,
+                           use_label_encoder=False, eval_metric='logloss')
+
+finxgb.fit(X_train, y_train)
+
+y_train_pred = finxgb.predict(X_train)
+y_train_pred_proba = finxgb.predict_proba(X_train)[:, 1]
+
+train_accuracy = accuracy_score(y_train, y_train_pred)
+train_precision = precision_score(y_train, y_train_pred)
+train_recall = recall_score(y_train, y_train_pred)
+train_f1 = f1_score(y_train, y_train_pred)
+train_roc_auc = roc_auc_score(y_train, y_train_pred_proba)
+train_conf_matrix = confusion_matrix(y_train, y_train_pred)
+
+train_sensitivity = train_recall
+train_specificity = train_conf_matrix[0, 0] / (train_conf_matrix[0, 0] + train_conf_matrix[0, 1])
+
+y_pred = finxgb.predict(X_test)
+y_pred_proba = finxgb.predict_proba(X_test)[:, 1]
+
+test_accuracy = accuracy_score(y_test, y_pred)
+test_precision = precision_score(y_test, y_pred)
+test_recall = recall_score(y_test, y_pred)
+test_f1 = f1_score(y_test, y_pred)
+test_roc_auc = roc_auc_score(y_test, y_pred_proba)
+test_conf_matrix = confusion_matrix(y_test, y_pred)
+
+test_sensitivity = test_recall
+test_specificity = test_conf_matrix[0, 0] / (test_conf_matrix[0, 0] + test_conf_matrix[0, 1])
+
+print("Training set performance:")
+print(f"Accuracy: {train_accuracy:.4f}")
+print(f"Sensitivity: {train_sensitivity:.4f}")
+print(f"Specificity: {train_specificity:.4f}")
+print(f"ROC-AUC: {train_roc_auc:.4f}")
+
+print("\nTest set performance:")
+print(f"Accuracy: {test_accuracy:.4f}")
+print(f"Sensitivity: {test_sensitivity:.4f}")
+print(f"Specificity: {test_specificity:.4f}")
+print(f"ROC-AUC: {test_roc_auc:.4f}")
+
+#SHAP analysis
+import shap
+import matplotlib.pyplot as plt
+explainer = shap.TreeExplainer(finxgb)
+shap_values = explainer.shap_values(X_train)
+if isinstance(shap_values, list):
+    shap_values_class_1 = shap_values[1]
+else:
+    shap_values_class_1 = shap_values
+fig, ax = plt.subplots(figsize=(3, 7))
+shap.summary_plot(shap_values_class_1, X_train, feature_names=feature_names, max_display=28, show=False)
+fig.set_size_inches(3, 7)
+plt.subplots_adjust(left=0.1) 
+ax = plt.gca()
+ax.tick_params(axis='y', labelsize=16)  
+x_tick_labels = ax.get_xticklabels()
+for label in x_tick_labels:
+    label.set_fontsize(16) 
+y_tick_labels = ax.get_yticklabels()
+for label in y_tick_labels:
+    label.set_fontsize(16) 
+ax.set_xlabel('SHAP value', fontsize=16)
+x_label = ax.set_xlabel(ax.get_xlabel(), fontsize=16)
+y_label = ax.set_ylabel(ax.get_ylabel(), fontsize=16)
+output_file_svg = r'D:\1work\1 PhD\SHAP_algae.svg'
+plt.savefig(output_file_svg, format='svg', dpi=400, bbox_inches='tight')
+plt.show()
