@@ -24,10 +24,10 @@ from sklearn.model_selection import cross_validate, KFold
 from sklearn.base import clone
 
 dataset=pd.read_csv(r'D:\1work\1 PhD\algae_2km.csv')
-import statsmodels.api as sm
-from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 #VIF analysis
+import statsmodels.api as sm
+from statsmodels.stats.outliers_influence import variance_inflation_factor
 dataset.fillna(0, inplace=True)
 data_df = pd.DataFrame(dataset)
 data_df = sm.add_constant(data_df)
