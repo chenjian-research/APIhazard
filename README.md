@@ -1,1 +1,1 @@
-Code for the manuscript: "Global ecological hazard of pharmaceutical mixtures in rivers"
+Data and code for the manuscript: "Pharmaceutical mixtures threaten river organisms worldwide"
