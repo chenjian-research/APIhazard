@@ -1,13 +1,17 @@
 Overview
+
 In this manuscript, we developed five common machine learning models, namely random forest, feedforward neural network, support vector regression, k-nearest neighbors, and extreme gradient boosting (XGBoost), to predict the pharmaceutical exceedance (i.e., mixture toxicity values exceeding 5% inhibition/lethality) for three representative trophic level species, including E. coli, R. subcapitata, and D. magna. The machine-learning models were implemented in Jupyter Notebook (V.7.0.8) using Python 3.12.
 
 Hardware requirements
+
 Only a standard modern computer is needed, with sufficient RAM to support in-memory processing of datasets.
 
 Software requirements
+
 These analyses are compatible with Windows, macOS, and Linux operating systems.
 
 Installation Guide
+
 Python is developed under an OSI-approved open-source license, making it freely usable and distributable. Python can be easy to pick up following the installation guide on the official website:
 Installing Python: https://www.python.org/downloads/
 Installing Jupyter: https://jupyter.org/install
