@@ -13,8 +13,11 @@ These analyses are compatible with Windows, macOS, and Linux operating systems.
 Installation Guide
 
 Python is developed under an OSI-approved open-source license, making it freely usable and distributable. Python can be easy to pick up following the installation guide on the official website:
+
 Installing Python: https://www.python.org/downloads/
+
 Installing Jupyter: https://jupyter.org/install
+
 Installing Python typically takes several minutes up to twenty minutes, depending on your internet connection and system setup.
 
 Package dependencies:
