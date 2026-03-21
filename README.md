@@ -31,6 +31,7 @@ We have provided three demonstration notebook (‘Demo for E. coli.ipynb’, ‘
 Step-by-Step Instructions:
 
 Model training and evaluation (take ‘Demo for E. coli.ipynb’ as an example)
+
 In the first cell, you can load and run the code to input the training and test sets (‘Demo_ecoli.csv’). The code will train the XGBoost model and evaluate its performance using metrics such as accuracy, specificity, sensitivity, and AUC (area under the ROC curve).
 
 Plot ROC curve
