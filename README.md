@@ -35,21 +35,27 @@ Model training and evaluation (take ‘Demo for E. coli.ipynb’ as an example)
 In the first cell, you can load and run the code to input the training and test sets (‘Demo_ecoli.csv’). The code will train the XGBoost model and evaluate its performance using metrics such as accuracy, specificity, sensitivity, and AUC (area under the ROC curve).
 
 Plot ROC curve
+
 In the second cell, you can run the provided code to visualize the ROC curve and output the AUC value of the XGBoost model.
 
 SHAP analysis
+
 The third cell runs SHAP (SHapley Additive exPlanations) analysis to further interpret the model.
 
 Feature importance
+
 In the fourth cell, you can run the code to determine the relative contributions of each input feature.
 
 Threshold identification
+
 In the fifth cell, you can execute the code to identify the threshold point where sensitivity equals specificity.
 
 Prediction on riverine grid cells
+
 In the sixth cell, you can input the prediction dataset (Demo_prediction.csv) and run the code to predict pharmaceutical exceedance for E. coli in 223,152 global riverine grid cells.
 
 Global visualization
+
 In the seventh cell, you can run the code to map the pharmaceutical exceedance for E. coli in global rivers at 2 km resolution.
 
 The outputs from this demo will match the results presented in our manuscript.
