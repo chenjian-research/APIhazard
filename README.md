@@ -1,6 +1,6 @@
 Overview
 
-In this manuscript, we developed three extreme gradient boosting (XGBoost) models to predict the pharmaceutical exceedance (i.e., mixture toxicity values exceeding 5% inhibition/lethality) for three representative trophic level species, including E. coli, R. subcapitata, and D. magna. The machine-learning models were implemented in Jupyter Notebook (V.7.0.8) using Python 3.12.
+In this manuscript, we developed three extreme gradient boosting (XGBoost) models to predict the pharmaceutical exceedance for three representative trophic level species, including E. coli, R. subcapitata, and D. magna. The machine-learning models were implemented in Jupyter Notebook (V.7.0.8) using Python 3.12.
 
 Hardware requirements:
 
@@ -58,7 +58,6 @@ Global visualization
 
 In the seventh cell, you can run the code to map the pharmaceutical exceedance for E. coli in global rivers at 2 km resolution.
 
-The outputs from this demo will match the results presented in our manuscript.
 
 Support and Feedback
 
@@ -68,4 +67,4 @@ Thank you for your interest in our work!
 
 Best wishes,
 
-Jian (chenjianhk@ust.hk)
+Jian (chenj@mail.bnu.edu.cn)
